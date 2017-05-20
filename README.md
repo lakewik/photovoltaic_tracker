@@ -1,1 +1,2 @@
-# photovoltaic_tracker
+# Photovoltaic ceel tracker
+School project
