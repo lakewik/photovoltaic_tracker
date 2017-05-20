@@ -1,9 +1,14 @@
+#include <Servo.h>
+
 char command;
 String string;
 boolean ledon = false;
 
 #define NUM_SAMPLES 10
 
+Servo servo;
+int servoAngle = 0;
+const int servoAngleIncreaseRate = 1;
 int sum = 0;                    // sum of samples taken
 unsigned char sample_count = 0; // current sample number
 float voltage = 0.0;            // calculate
@@ -13,11 +18,16 @@ int RedLEDPin = 12;
 int YellowLEDPin = 11;
 int voltageMeasurmentPin = 6;
 int servoPin = 9;
+int lightSensor = 0; //pin sensora
+int light = 0;
+const unsigned long fiveMinutes = 5 * 60 * 1000UL;
+static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan due first loop();
 
   void setup()
   {
     Serial.begin(9600);
     pinMode(GreenLEDPin, OUTPUT);
+	servo.write(0);
   }
 
   void loop()
@@ -80,6 +90,12 @@ int servoPin = 9;
 
     //// GŁÓWNY PROCES TRACKERA ////
     /// TODO
+
+	unsigned long timeNow = millis(); //millis to make it NOT stop other tasks
+	if (timeNow - lastScan >= fiveMinutes) {
+		lastScan += fiveMinutes;
+		searchSun();
+	}
     
  }
 
@@ -151,6 +167,17 @@ void getTimeParametrsFromApp()
     
 void searchSun()
    {
+	//1023 / 5.683 = ~180
+
+	light = analogRead(lightSensor);
+
+	//if the scan last scan was less than 80% of 1023 it tries to move the servo by one degree then scans again to check
+	if (light <= 818.4) { 
+		servoAngle += servoAngleIncreaseRate;
+		servo.write(servoAngle);
+		light = analogRead(lightSensor);
+	}
+
      //// funkcja szukania miejsca o najlepszym natężeniu światła
      /// TODO
       delay(10);
