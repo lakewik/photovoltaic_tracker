@@ -1,4 +1,4 @@
-# Photovoltaic ceel tracker
+# Photovoltaic cell tracker
 School project
 
 To Do:
