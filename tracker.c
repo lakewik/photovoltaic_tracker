@@ -177,14 +177,14 @@ void searchSun()
    {
 	//1023 / 5.68(3) = 180
 
-	light = analogRead(lightSensor);
+	light = analogRead(lightSensorPin);
 
 	//if the scan last scan was less than 80% of 1023 it tries to move the servo by one degree then scans again to check per centage
 	if (light <= 818.4) { 
 		servoAngle += servoAngleIncreaseRate;
 		servo.write(servoAngle);
 		Servo::refresh();
-		light = analogRead(lightSensor);
+		light = analogRead(lightSensorPin);
 	}
 
      //// funkcja szukania miejsca o najlepszym natężeniu światła
