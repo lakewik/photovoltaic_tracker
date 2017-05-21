@@ -1,3 +1,5 @@
+
+#include <limits.h>
 #include <Servo.h>
 
 char command;
@@ -5,6 +7,8 @@ String string;
 boolean ledon = false;
 
 #define NUM_SAMPLES 10
+
+ int light_power_array[181];
 
 // SERVO VARIABLES //
 Servo servo;
@@ -22,24 +26,59 @@ int RedLEDPin = 12;
 int YellowLEDPin = 11;
 int voltageMeasurmentPin = 6;
 int servoPin = 9;
-int lightSensorPin = 0; //light sensor's pin
+int lightSensorPin = 5; //light sensor's pin
 int light = 0; //variable to analogRead of Light Sensor
 const unsigned long fiveMinutes = 5 * 60 * 1000UL;
 static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan due first loop();
+int loop_count = 0;
 
   void setup()
   {
     Serial.begin(9600);
     pinMode(GreenLEDPin, OUTPUT);
+    pinMode(YellowLEDPin, OUTPUT);
     //set the servo to initial position
     servo.attach(servoPin);
-	servo.write(defaultServoAngle);
-	//initial scan if initialization of "lastScan" var fails lul
-	//searchSun();
+ // servo.write(defaultServoAngle);
+ analogWrite(YellowLEDPin, 126);
+  //initial scan if initialization of "lastScan" var fails lul
+  //searchSun();
   }
 
   void loop()
   {
+
+    //analogWrite(YellowLEDPin, loop_count*3);
+    analogWrite(YellowLEDPin, 0);
+
+  loop_count++;
+  if (loop_count == 10) {
+    int sun_power_array[181];
+     searchSun();
+     int max_v = INT_MIN;
+      int max_i = 0;
+ 
+      for ( int i = 0; i < sizeof(light_power_array)/sizeof(light_power_array[0]); i++ )
+        {
+          if ( light_power_array[i] > max_v )
+            {
+              max_v = light_power_array[i];
+              max_i = i;
+            }
+        }
+ 
+  //printf( "The max value (%d) is at index %d.", max_v, max_i);
+
+    servo.write(max_i);
+    analogWrite(YellowLEDPin, 255);
+  
+     loop_count = 0;
+  }
+
+  delay(1000);
+  analogWrite(YellowLEDPin, 0);
+
+    
 
     /// CZYTANIE BLUETOOTH Z SERIAL PORT ///
     
@@ -92,18 +131,20 @@ static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan 
 
     /// WYSYŁANIE DANYCH Z CZUJNIKÓW ///
 
-    readTemperatureSensor();
-    sendVoltage();
-    sendSunPower();
+    //readTemperatureSensor();
+    //sendVoltage();
+    //sendSunPower();
 
     //// GŁÓWNY PROCES TRACKERA ////
     /// WIP
 
-	unsigned long timeNow = millis(); //millis to make it NOT stop other tasks
-	if (timeNow - lastScan >= fiveMinutes) {
-		lastScan += fiveMinutes;
-		searchSun();
-	}
+  //unsigned long timeNow = millis(); //millis to make it NOT stop other tasks
+  //if (timeNow - lastScan >= fiveMinutes) {
+   // lastScan += fiveMinutes;
+    //searchSun();
+  //}
+
+  
     
  }
 
@@ -173,23 +214,39 @@ void getTimeParametrsFromApp()
     }
 
     
-void searchSun()
+int searchSun()
    {
-	//1023 / 5.68(3) = 180
+  //1023 / 5.68(3) = 180
 
-	light = analogRead(lightSensorPin);
+  
+  servo.write(defaultServoAngle); /// set initial servo position
 
-	//if the scan last scan was less than 80% of 1023 it tries to move the servo by one degree then scans again to check per centage
-	if (light <= 818.4) { 
-		servoAngle += servoAngleIncreaseRate;
-		servo.write(servoAngle);
-		Servo::refresh();
-		light = analogRead(lightSensorPin);
-	}
+   int current_angle = 0;
+   int current_light = 0;
+   
+   while (current_angle < 180) {
+        servo.write(current_angle); 
+        current_light = analogRead(lightSensorPin);
+        light_power_array[current_angle] = current_light;
+        current_angle++;
+        delay(100);
+    }
+
+   ///light = analogRead(lightSensorPin);
+
+  //if the scan last scan was less than 80% of 1023 it tries to move the servo by one degree then scans again to check per centage
+  //if (light <= 818.4) { 
+   // servoAngle += servoAngleIncreaseRate;
+   // servo.write(servoAngle);
+    //Servo::refresh();
+   // light = analogRead(lightSensorPin);
+  //}
 
      //// funkcja szukania miejsca o najlepszym natężeniu światła
      /// WIP
+     
       delay(10);
+      //return light_power_array;
     }
  
 void yellowStatusLedOn()
@@ -209,6 +266,3 @@ void yellowStatusLedOn()
       analogWrite(RedLEDPin, 255);
       delay(10);
  }
- 
-
-    
