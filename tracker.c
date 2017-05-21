@@ -6,20 +6,24 @@ boolean ledon = false;
 
 #define NUM_SAMPLES 10
 
+// SERVO VARIABLES //
 Servo servo;
 int servoAngle = 0;
+const int defaultServoAngle = 0;
 const int servoAngleIncreaseRate = 1;
+// TEMPERATURE(?) VARIABLES //
 int sum = 0;                    // sum of samples taken
 unsigned char sample_count = 0; // current sample number
 float voltage = 0.0;            // calculate
+// PIN VARIABLES //
 int TermometrPin = 7;
 int GreenLEDPin = 13;
 int RedLEDPin = 12;
 int YellowLEDPin = 11;
 int voltageMeasurmentPin = 6;
 int servoPin = 9;
-int lightSensor = 0; //pin sensora
-int light = 0;
+int lightSensorPin = 0; //light sensor's pin
+int light = 0; //variable to analogRead of Light Sensor
 const unsigned long fiveMinutes = 5 * 60 * 1000UL;
 static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan due first loop();
 
@@ -27,7 +31,11 @@ static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan 
   {
     Serial.begin(9600);
     pinMode(GreenLEDPin, OUTPUT);
-	servo.write(0);
+    //set the servo to initial position
+    servo.attach(servoPin);
+	servo.write(defaultServoAngle);
+	//initial scan if initialization of "lastScan" var fails lul
+	//searchSun();
   }
 
   void loop()
@@ -89,7 +97,7 @@ static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan 
     sendSunPower();
 
     //// GŁÓWNY PROCES TRACKERA ////
-    /// TODO
+    /// WIP
 
 	unsigned long timeNow = millis(); //millis to make it NOT stop other tasks
 	if (timeNow - lastScan >= fiveMinutes) {
@@ -167,19 +175,20 @@ void getTimeParametrsFromApp()
     
 void searchSun()
    {
-	//1023 / 5.683 = ~180
+	//1023 / 5.68(3) = 180
 
 	light = analogRead(lightSensor);
 
-	//if the scan last scan was less than 80% of 1023 it tries to move the servo by one degree then scans again to check
+	//if the scan last scan was less than 80% of 1023 it tries to move the servo by one degree then scans again to check per centage
 	if (light <= 818.4) { 
 		servoAngle += servoAngleIncreaseRate;
 		servo.write(servoAngle);
+		Servo::refresh();
 		light = analogRead(lightSensor);
 	}
 
      //// funkcja szukania miejsca o najlepszym natężeniu światła
-     /// TODO
+     /// WIP
       delay(10);
     }
  
