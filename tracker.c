@@ -31,6 +31,8 @@ int light = 0; //variable to analogRead of Light Sensor
 const unsigned long fiveMinutes = 5 * 60 * 1000UL;
 static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan due first loop();
 int loop_count = 0;
+boolean shouldTrack = false;
+boolean alreadyScanned = false;
 
   void setup()
   {
@@ -139,9 +141,10 @@ int loop_count = 0;
     /// WIP
 
   //unsigned long timeNow = millis(); //millis to make it NOT stop other tasks
-  //if (timeNow - lastScan >= fiveMinutes) {
-   // lastScan += fiveMinutes;
-    //searchSun();
+  //if(timeNow - lastScan >= fiveMinutes) {
+  //  lastScan += fiveMinutes;
+  //  shouldTrack = true;
+  //  trackSun();
   //}
 
   
@@ -231,17 +234,6 @@ int searchSun()
         current_angle++;
         delay(100);
     }
-
-   ///light = analogRead(lightSensorPin);
-
-  //if the scan last scan was less than 80% of 1023 it tries to move the servo by one degree then scans again to check per centage
-  //if (light <= 818.4) { 
-   // servoAngle += servoAngleIncreaseRate;
-   // servo.write(servoAngle);
-    //Servo::refresh();
-   // light = analogRead(lightSensorPin);
-  //}
-
      //// funkcja szukania miejsca o najlepszym natężeniu światła
      /// WIP
      
@@ -266,3 +258,17 @@ void yellowStatusLedOn()
       analogWrite(RedLEDPin, 255);
       delay(10);
  }
+
+  void trackSun() {
+    while(shouldTrack == true) {
+      light = analogRead(lightSensorPin);
+      if(light <= 818) {
+        servoAngle += servoAngleIncreaseRate;
+        servo.Write(servoAngle);
+        Servo::refresh();
+      } else {
+        shouldTrack = false;
+      }
+    }
+    delay(10);
+  }
