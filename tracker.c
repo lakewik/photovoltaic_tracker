@@ -1,6 +1,6 @@
-
 #include <limits.h>
 #include <Servo.h>
+#include <Array.h>
 
 char command;
 String string;
@@ -28,11 +28,15 @@ int voltageMeasurmentPin = 6;
 int servoPin = 9;
 int lightSensorPin = 5; //light sensor's pin
 int light = 0; //variable to analogRead of Light Sensor
+// TRACKER VARIABLES //
 const unsigned long fiveMinutes = 5 * 60 * 1000UL;
 static unsigned long lastScan = 0 - fiveMinutes; //initialization: make it scan due first loop();
 int loop_count = 0;
 boolean shouldTrack = false;
 boolean alreadyScanned = false;
+int numberOfScans = 0;
+int lightArray[181];
+Array<int> arrayOfLight = Array<int>(lightArray, 181);
 
   void setup()
   {
@@ -145,6 +149,7 @@ boolean alreadyScanned = false;
   //  lastScan += fiveMinutes;
   //  shouldTrack = true;
   //  trackSun();
+  //  servo.write(arrayOfLight.getMax());
   //}
 
   
@@ -262,12 +267,15 @@ void yellowStatusLedOn()
   void trackSun() {
     while(shouldTrack == true) {
       light = analogRead(lightSensorPin);
-      if(light <= 818) {
+      if(light <= 818 && numberOfScans <= 180) {
+        lightArray[servoAngle] = light;
+        numberOfScans += 1;
         servoAngle += servoAngleIncreaseRate;
         servo.Write(servoAngle);
         Servo::refresh();
       } else {
         shouldTrack = false;
+        numberOfScans = 0;
       }
     }
     delay(10);
