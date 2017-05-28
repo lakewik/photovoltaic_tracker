@@ -3,5 +3,5 @@ School project
 
 To Do:
 - [x] Basic sun tracker function
-- [ ] Bluetooth integration
+- [x] Bluetooth integration
 - [ ] \(Optional) Application for smartphones
