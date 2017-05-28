@@ -36,6 +36,7 @@ boolean shouldTrack = false;
 boolean alreadyScanned = false;
 int numberOfScans = 0;
 int lightArray[181];
+int current_angle;
 Array<int> arrayOfLight = Array<int>(lightArray, 181);
 
   void setup()
@@ -76,6 +77,7 @@ Array<int> arrayOfLight = Array<int>(lightArray, 181);
   //printf( "The max value (%d) is at index %d.", max_v, max_i);
 
     servo.write(max_i);
+    current_angle = max_i;
     analogWrite(YellowLEDPin, 255);
   
      loop_count = 0;
@@ -133,6 +135,18 @@ Array<int> arrayOfLight = Array<int>(lightArray, 181);
     if(string =="DISABLE")
     {
         ledon = false;
+    }
+
+     if(string =="SERVO_LEFT")
+    {
+      current_angle++;
+       servo.write(current_angle);
+    }
+
+     if(string =="SERVO_RIGHT")
+    {
+       current_angle--;
+       servo.write(current_angle);
     }
 
     /// WYSYŁANIE DANYCH Z CZUJNIKÓW ///
@@ -226,6 +240,8 @@ int searchSun()
    {
   //1023 / 5.68(3) = 180
 
+  yellowStatusLedOn(); // yellow led ON during scanning
+
   
   servo.write(defaultServoAngle); /// set initial servo position
 
@@ -265,6 +281,7 @@ void yellowStatusLedOn()
  }
 
   void trackSun() {
+    yellowStatusLedOn(); // yellow led ON during scanning
     while(shouldTrack == true) {
       light = analogRead(lightSensorPin);
       if(light <= 818 && numberOfScans <= 180) {
